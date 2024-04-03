@@ -7,7 +7,8 @@ const handleBuster = require("./utils/extensionBuster");
 const solver = path.join(process.cwd(), "src/bot/extension/buster/");
 const adsblock = path.join(process.cwd(), "src/bot/extension/adblock/");
 const production = process.env.NODE_ENV === "production" || false;
-const baseUrl = 'https://smallseotools.com/domain-authority-checker/'
+// const baseUrl = 'https://smallseotools.com/domain-authority-checker/'
+const baseUrl = 'file:///E:/Documents/Kerja/bot-da/pages/Domain%20Authority%20Checker%20-%20Moz%20DA%20PA%20Checker%20of%20multiple%20urls.html'
 puppeteer.use(stealth());
 
 function handleInfo(message) {
@@ -49,10 +50,6 @@ const app = async (handleInfo, handleError, props) => {
         });
     };
 
-    props.buster && page.on('load', async () => {
-        await solveCaptcha(handleInfo, page)
-    })
-
     page.on('dialog', async dialog => {
         await dialog.dismiss();
     })
@@ -66,6 +63,34 @@ const app = async (handleInfo, handleError, props) => {
                 waitUntil: ['domcontentloaded', 'networkidle2'],
                 timeout: 120000
             })
+
+            handleInfo('Waiting for the result')
+            await page.waitForSelector('#result_section', {
+                waitUntil: 120000
+            })
+
+            const selectorData = [
+                'body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div > div.border1.box_w1.border-top-0.p-2.d-flex > div.d-flex.align-items-center',
+                'body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div > div:nth-child(2) > span',
+                'body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div > div:nth-child(3) > span',
+                'body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div > div.border1.box_w4.border-top-0.border-left-0.px-1.py-2.d-flex.align-items-center.justify-content-center.mdn'
+            ]
+
+            // TODO: Selector already correct now we need to handle and manage the data as for what tommorow
+
+            for (let i = 0; i < selectorData.length; i++) {
+                const elements = await page.$$(selectorData[i]);
+                for (let j = 0; j < elements.length; j++) {
+                    if (elements.length > 0) {
+                        const url = await page.evaluate(el => el.innerText, elements[j]);
+                        handleInfo(innerText);
+                    } else {
+                        console.log('result not found');
+                    }
+                }
+            }
+
+            return;
 
             const data = [
                 'https://www.google.com',
@@ -87,32 +112,27 @@ const app = async (handleInfo, handleError, props) => {
             await page.$eval('button[name="domainAuthority"]', el => el.click())
 
             await page.sleep(3000)
-            await solveCaptcha(handleInfo, page)
-
-            await page.waitForNavigation({
-                waitUntil: ['networkidle2', 'domcontentloaded'],
-                timeout: 120000
-            })
-
-            await page.waitForSelector('#result_section', {
-                waitUntil: 120000
-            })
+            // await solveCaptcha(handleInfo, page)
 
             await page.sleep(3000)
 
             let result = [];
-            
+
             // TODO: The extracting section should be an separate function
             handleInfo('Extracting data')
-            const defaultSelector = 'body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div >'
-            const DA = await page.$$(`${defaultSelector} div:nth-child(2) > span`);
 
-            for (const [i, el] of DA.entries()) {
-                const text = await page.evaluate(element => element.innerText, el);
-                result.push(text);
-            }
 
-            handleInfo('Data:', result);
+            // for (const [i, el] of DA.entries()) {
+            //     const text = await page.evaluate(element => element.innerText, el);
+            //     result.push(text);
+            // }
+
+            const DAData = await page.evaluate(() => {
+                const data = document.querySelector("body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div:nth-child(2) > div:nth-child(2) > span").innerText
+                return data;
+            });
+
+            handleInfo('Data:', DAData);
 
             // Not working
             // const getData = await page.evaluate(() => {
@@ -147,5 +167,5 @@ const app = async (handleInfo, handleError, props) => {
 }
 
 app(handleInfo, handleError, props = {
-    buster: true
+    buster: false
 })
