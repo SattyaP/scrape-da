@@ -4,12 +4,13 @@ const puppeteer = require('puppeteer-extra')
 const stealth = require("puppeteer-extra-plugin-stealth");
 const solveCaptcha = require("./utils/solveCaptcha");
 const handleBuster = require("./utils/extensionBuster");
+puppeteer.use(stealth());
+
 const solver = path.join(process.cwd(), "src/bot/extension/buster/");
 const adsblock = path.join(process.cwd(), "src/bot/extension/adblock/");
 const production = process.env.NODE_ENV === "production" || false;
-// const baseUrl = 'https://smallseotools.com/domain-authority-checker/'
-const baseUrl = 'file:///E:/Documents/Kerja/bot-da/pages/Domain%20Authority%20Checker%20-%20Moz%20DA%20PA%20Checker%20of%20multiple%20urls.html'
-puppeteer.use(stealth());
+const baseUrl = 'https://smallseotools.com/domain-authority-checker/'
+// const baseUrl = 'file:///E:/Documents/Kerja/bot-da/pages/Domain%20Authority%20Checker%20-%20Moz%20DA%20PA%20Checker%20of%20multiple%20urls.html'
 
 function handleInfo(message) {
     if (production) {
@@ -43,7 +44,6 @@ const app = async (handleInfo, handleError, props) => {
 
     const page = await browser.newPage();
 
-
     page.sleep = function (timeout) {
         return new Promise(function (resolve) {
             setTimeout(resolve, timeout);
@@ -64,40 +64,7 @@ const app = async (handleInfo, handleError, props) => {
                 timeout: 120000
             })
 
-            handleInfo('Waiting for the result')
-            await page.waitForSelector('#result_section', {
-                waitUntil: 120000
-            })
-
-            const selectorData = [
-                'body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div > div.border1.box_w1.border-top-0.p-2.d-flex > div.d-flex.align-items-center',
-                'body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div > div:nth-child(2) > span',
-                'body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div > div:nth-child(3) > span',
-                'body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div > div.border1.box_w4.border-top-0.border-left-0.px-1.py-2.d-flex.align-items-center.justify-content-center.mdn'
-            ]
-
-            // TODO: Selector already correct now we need to handle and manage the data as for what tommorow
-
-            for (let i = 0; i < selectorData.length; i++) {
-                const elements = await page.$$(selectorData[i]);
-                for (let j = 0; j < elements.length; j++) {
-                    if (elements.length > 0) {
-                        const url = await page.evaluate(el => el.innerText, elements[j]);
-                        handleInfo(innerText);
-                    } else {
-                        console.log('result not found');
-                    }
-                }
-            }
-
-            return;
-
-            const data = [
-                'https://www.google.com',
-                'https://www.facebook.com',
-                'https://www.twitter.com',
-            ]
-
+            // TODO: Management data urls get 10/by all data on files
             handleInfo('Inputting data')
             const input = await page.waitForSelector('#urls')
             if (input) {
@@ -112,51 +79,49 @@ const app = async (handleInfo, handleError, props) => {
             await page.$eval('button[name="domainAuthority"]', el => el.click())
 
             await page.sleep(3000)
-            // await solveCaptcha(handleInfo, page)
+            // Captcha solver should on this line
 
-            await page.sleep(3000)
-
-            let result = [];
-
-            // TODO: The extracting section should be an separate function
             handleInfo('Extracting data')
+            const datas = await extractData()
 
+            handleInfo(datas)
 
-            // for (const [i, el] of DA.entries()) {
-            //     const text = await page.evaluate(element => element.innerText, el);
-            //     result.push(text);
-            // }
+        } catch (error) {
+            handleError(error)
+            await browser.close()
+        }
+    }
 
-            const DAData = await page.evaluate(() => {
-                const data = document.querySelector("body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div:nth-child(2) > div:nth-child(2) > span").innerText
-                return data;
-            });
+    const extractData = async () => {
+        handleInfo('Waiting for the result')
+        try {
+            await page.waitForSelector('#result_section', {
+                waitUntil: 120000
+            })
 
-            handleInfo('Data:', DAData);
+            const selectorData = {
+                url: 'body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div > div.border1.box_w1.border-top-0.p-2.d-flex > div.d-flex.align-items-center',
+                da: 'body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div > div:nth-child(2) > span',
+                pa: 'body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div > div:nth-child(3) > span',
+                ld: 'body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div > div.border1.box_w4.border-top-0.border-left-0.px-1.py-2.d-flex.align-items-center.justify-content-center.mdn'
+            }
 
-            // Not working
-            // const getData = await page.evaluate(() => {
-            //     let result = []
-            //     const defaultSelector = 'body > div:nth-child(9) > div > div.main_area.text-center > div.bg-white.p-4.mps.border1.text-center.text-break > div >'
-            //     const DAElement = document.querySelectorAll(`${defaultSelector} div:nth-child(2) > span`)
-            //     const DOMElement = document.querySelectorAll(`${defaultSelector} div.border1.box_w1.border-top-0.p-2.d-flex > div.d-flex.align-items-center`)
-            //     const PAElement = document.querySelectorAll(`${defaultSelector} div:nth-child(3) > span`)
-            //     const LDElement = document.querySelectorAll(`${defaultSelector} div.border1.box_w4.border-top-0.border-left-0.px-1.py-2.d-flex.align-items-center.justify-content-center.mdn`)
+            const urls = await page.$$(selectorData.url)
+            const das = await page.$$(selectorData.da)
+            const pas = await page.$$(selectorData.pa)
+            const lds = await page.$$(selectorData.ld)
 
-            //     DAElement.forEach((el, i) => {
-            //         result.push({
-            //             url: el.innerText,
-            //             DA: DOMElement[i].innerText,
-            //             PA: PAElement[i].innerText,
-            //             LD: LDElement[i].innerText
-            //         })
-            //     })
+            const results = [];
+            for (let i = 0; i < urls.length; i++) {
+                results.push({
+                    url: await page.evaluate(e => e.innerText, urls[i]),
+                    da: await page.evaluate(e => e.innerText, das[i]),
+                    pa: await page.evaluate(e => e.innerText, pas[i]),
+                    ld: await page.evaluate(e => e.innerText, lds[i])
+                })
+            }
 
-            //     console.log(result);
-            //     return result;
-            // })
-
-
+            return results;
         } catch (error) {
             handleError(error)
             await browser.close()
