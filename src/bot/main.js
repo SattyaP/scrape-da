@@ -8,29 +8,11 @@ puppeteer.use(stealth());
 
 const solver = path.join(process.cwd(), "src/bot/extension/buster/");
 const adsblock = path.join(process.cwd(), "src/bot/extension/adblock/");
-const production = process.env.NODE_ENV === "production" || false;
 const baseUrl = 'https://smallseotools.com/domain-authority-checker/'
-// const baseUrl = 'file:///E:/Documents/Kerja/bot-da/pages/Domain%20Authority%20Checker%20-%20Moz%20DA%20PA%20Checker%20of%20multiple%20urls.html'
-
-function handleInfo(message) {
-    if (production) {
-        log("[INFO] " + message)
-    } else {
-        console.log(message)
-    }
-}
-
-function handleError(message) {
-    if (production) {
-        log(message)
-    } else {
-        console.error(message)
-    }
-}
 
 const app = async (handleInfo, handleError, props) => {
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: props.headless,
         defaultViewport: null,
         args: [
             `--disable-extensions-except=${solver},${adsblock}`,
@@ -54,37 +36,36 @@ const app = async (handleInfo, handleError, props) => {
         await dialog.dismiss();
     })
 
-    const Scrape = async () => {
+    props.buster && await handleBuster('YXXP7NHK3HBMWCGU22RJOED3L2XPX3X6', page)
+
+    handleInfo('Navigating to the website')
+    await page.goto(baseUrl, {
+        waitUntil: ['domcontentloaded', 'networkidle2'],
+        timeout: 120000
+    })
+
+    const Scrape = async (urls) => {
         try {
-            props.buster && await handleBuster('YXXP7NHK3HBMWCGU22RJOED3L2XPX3X6', page)
-
-            handleInfo('Navigating to the website')
-            await page.goto(baseUrl, {
-                waitUntil: ['domcontentloaded', 'networkidle2'],
-                timeout: 120000
-            })
-
-            // TODO: Management data urls get 10/by all data on files
             handleInfo('Inputting data')
             const input = await page.waitForSelector('#urls')
+
             if (input) {
                 await input.click()
-                await page.$eval('#urls', (el, data) => el.value = data.join('\n'), data)
+                await page.$eval('#urls', (el, urls) => el.value = urls.join('\n'), urls)
             }
 
             await page.sleep(3000)
 
             handleInfo('Checking wushh... 🚀')
-            await page.waitForSelector('button[name="domainAuthority"]')
+            await page.waitForSelector('button[name="domainAuthority"]', {
+                waitUntil: 120000
+            })
             await page.$eval('button[name="domainAuthority"]', el => el.click())
 
             await page.sleep(3000)
-            // Captcha solver should on this line
 
             handleInfo('Extracting data')
-            const datas = await extractData()
-
-            handleInfo(datas)
+            await extractData()
 
         } catch (error) {
             handleError(error)
@@ -124,13 +105,44 @@ const app = async (handleInfo, handleError, props) => {
             return results;
         } catch (error) {
             handleError(error)
+            throw error;
+        }
+    }
+
+    const getFilesData = () => {
+        try {
+            const files = fs.readFileSync(props.files, "utf-8");
+            const datas = files.replace(/\r/g, "").split("\n").filter(line => line !== "");
+
+            const results = [];
+            for (let i = 0; i < datas.length; i += 10) {
+                results.push(datas.slice(i, i + 10));
+            }
+
+            return results;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    };
+
+    const workFlow = async () => {
+        try {
+            const urls = getFilesData();
+            for (let i = 0; i < urls.length; i++) {
+                handleInfo(`Processing batch ${i + 1}`)
+                await Scrape(urls[i])
+            }
+
+            handleInfo('Done! 🎉')
+            await browser.close()
+        } catch (error) {
+            handleError(error)
             await browser.close()
         }
     }
 
-    Scrape()
+    await workFlow();
 }
 
-app(handleInfo, handleError, props = {
-    buster: false
-})
+module.exports = app;

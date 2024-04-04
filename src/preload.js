@@ -5,11 +5,6 @@ const message = document.getElementById('message');
 const restartButton = document.getElementById('restart-button');
 const loaderDownload = document.getElementById('warp-loader')
 
-ipcRenderer.send('halo')
-ipcRenderer.on("hai", () => {
-    document.querySelector("h1").innerText = "Halo World Bro"
-})
-
 ipcRenderer.send('app_version');
 ipcRenderer.on('app_version', (event, arg) => {
     version.innerText = 'v' + arg.version;

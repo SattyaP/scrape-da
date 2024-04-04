@@ -1,11 +1,11 @@
 {
-  "name": "template",
-  "productName": "template",
-  "version": "1.0.2",
-  "description": "My Electron application description",
+  "name": "alsav-da-checker",
+  "productName": "Alsav DA Checker",
+  "version": "1.0.0",
+  "description": "Alsav DA Checker is a tool to check the DA of a domain.",
   "main": "src/index.js",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "npx electronmon .",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
@@ -16,12 +16,13 @@
   },
   "keywords": [],
   "author": {
-    "name": "Alsav System"
+    "name": "Alsav Systems"
   },
   "license": "MIT",
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
     "electron-updater": "^6.1.7",
+    "electronmon": "^2.0.2",
     "fs": "^0.0.1-security",
     "puppeteer": "^21.6.0",
     "puppeteer-extra": "^3.3.6",
@@ -39,17 +40,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/SattyaP/template-electron"
+    "url": "https://github.com/SattyaP/scrape-da"
   },
   "build": {
-    "appId": "Template Electron",
-    "productName": "Template Electron",
+    "appId": "org.alsav.da-checker",
+    "productName": "Alsav DA Checker",
     "compression": "maximum",
-    "copyright": "Copyrights 2024 Satya",
+    "copyright": "Copyrights 2024 Alsav Systems",
     "publish": {
       "provider": "github",
       "owner": "SattyaP",
-      "repo": "template-electron",
+      "repo": "scrape-da",
       "private": false
     },
     "win": {

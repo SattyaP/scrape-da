@@ -4,6 +4,7 @@
   box-sizing: border-box;
   scroll-behavior: smooth;
   -webkit-user-select: none;
+  font-family: "Poppins", sans-serif;
   cursor: default;
   user-select: none;
 }
@@ -15,6 +16,7 @@ body::-webkit-scrollbar {
 body {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  background-color: #eff3f6 !important;
 }
 
 .hidden {
