@@ -1,38 +1,22 @@
 const { app, BrowserWindow, ipcMain, Menu } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
+const fs = require("fs");
+const { mainScrape, stopProccess } = require("./bot/main");
 const production = process.env.NODE_ENV === "production" || false;
 
 if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
-function handleInfo(message) {
-  if (production) {
-    log("[INFO] " + message);
-  } else {
-    console.log(message);
-  }
-}
-
-function handleError(message) {
-  if (production) {
-    log("[ERROR] " + message);
-  } else {
-    console.error(message);
-  }
-}
-
 const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 724,
-    // titleBarStyle: "hidden",
-    // titleBarOverlay: {
-    //   color: "#fff",
-    //   symbolColor: "#198754",
-    // },
+    // TODO: Create icon
     // icon: path.join(__dirname, './assets/traffic-3.ico'),
+    autoHideMenuBar: true,
+    resizable: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -81,3 +65,53 @@ ipcMain.on("app_version", (event) => {
 ipcMain.on("restart_app", () => {
   autoUpdater.quitAndInstall();
 });
+
+ipcMain.on("start-bot", async (event, props) => {
+  const logs = [];
+  const prog = [];
+
+  const handleInfo = (message) => {
+    logs.push("[INFO] " + message);
+    event.sender.send("log", logs.join("\n"));
+  };
+
+  const handleError = (error) => {
+    if (production) {
+      // rollbar here
+    } else {
+      console.error(error);
+    }
+  };
+
+  const PostTable = (results) => {
+    event.sender.send("logToTable", results);
+  };
+
+  const proggress = (pros) => {
+    prog.push(pros);
+    event.sender.send("proggress", prog);
+  };
+
+  try {
+    handleInfo("Bot started!");
+    event.sender.send("run");
+    await mainScrape(handleInfo, handleError, proggress, PostTable, props);
+    handleInfo("Bot finished!");
+    event.sender.send("finish", props);
+  } catch (error) {
+    handleError(error);
+    event.sender.send("finish", props);
+  }
+});
+
+ipcMain.on("stop", async (event) => {
+  const logs = [];
+
+  const handleInfo = (message) => {
+    logs.push("[INFO] " + message);
+    event.sender.send("log", logs.join("\n"));
+  };
+
+  stopProccess(handleInfo).then(event.sender.send("finish"));
+});
+

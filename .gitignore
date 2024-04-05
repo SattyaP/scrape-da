@@ -92,3 +92,5 @@ typings/
 out/
 dist
 package-lock.json
+dev.js
+src/bot/data

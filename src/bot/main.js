@@ -9,8 +9,10 @@ puppeteer.use(stealth());
 const solver = path.join(process.cwd(), "src/bot/extension/buster/");
 const adsblock = path.join(process.cwd(), "src/bot/extension/adblock/");
 const baseUrl = 'https://smallseotools.com/domain-authority-checker/'
+const times = 3000
+let stops = false
 
-const app = async (handleInfo, handleError, props) => {
+const mainScrape = async (handleInfo, handleError, proggress, PostTable, props) => {
     const browser = await puppeteer.launch({
         headless: props.headless,
         defaultViewport: null,
@@ -36,7 +38,7 @@ const app = async (handleInfo, handleError, props) => {
         await dialog.dismiss();
     })
 
-    props.buster && await handleBuster('YXXP7NHK3HBMWCGU22RJOED3L2XPX3X6', page)
+    props.buster && await handleBuster(props.busterKey, page)
 
     handleInfo('Navigating to the website')
     await page.goto(baseUrl, {
@@ -54,7 +56,7 @@ const app = async (handleInfo, handleError, props) => {
                 await page.$eval('#urls', (el, urls) => el.value = urls.join('\n'), urls)
             }
 
-            await page.sleep(3000)
+            await page.sleep(times)
 
             handleInfo('Checking wushh... 🚀')
             await page.waitForSelector('button[name="domainAuthority"]', {
@@ -62,10 +64,13 @@ const app = async (handleInfo, handleError, props) => {
             })
             await page.$eval('button[name="domainAuthority"]', el => el.click())
 
-            await page.sleep(3000)
+            await page.sleep(times * 2)
+
+            await solveCaptcha(handleInfo, page)
 
             handleInfo('Extracting data')
             await extractData()
+            handleInfo('Extracted data')
 
         } catch (error) {
             handleError(error)
@@ -92,9 +97,8 @@ const app = async (handleInfo, handleError, props) => {
             const pas = await page.$$(selectorData.pa)
             const lds = await page.$$(selectorData.ld)
 
-            const results = [];
             for (let i = 0; i < urls.length; i++) {
-                results.push({
+                PostTable({
                     url: await page.evaluate(e => e.innerText, urls[i]),
                     da: await page.evaluate(e => e.innerText, das[i]),
                     pa: await page.evaluate(e => e.innerText, pas[i]),
@@ -102,7 +106,6 @@ const app = async (handleInfo, handleError, props) => {
                 })
             }
 
-            return results;
         } catch (error) {
             handleError(error)
             throw error;
@@ -114,6 +117,7 @@ const app = async (handleInfo, handleError, props) => {
             const files = fs.readFileSync(props.files, "utf-8");
             const datas = files.replace(/\r/g, "").split("\n").filter(line => line !== "");
 
+            // TODO: Need to delete the data after used
             const results = [];
             for (let i = 0; i < datas.length; i += 10) {
                 results.push(datas.slice(i, i + 10));
@@ -130,8 +134,23 @@ const app = async (handleInfo, handleError, props) => {
         try {
             const urls = getFilesData();
             for (let i = 0; i < urls.length; i++) {
+                if (stops) {
+                    handleInfo("Stop Process is done")
+                    stops = false
+                    break;
+                }
+                
                 handleInfo(`Processing batch ${i + 1}`)
                 await Scrape(urls[i])
+                
+                const countProgress = parseInt(((i + 1) / urls.length) * 100);
+                proggress(countProgress);
+
+                if (stops) {
+                    handleInfo("Stop Process is done")
+                    stops = false
+                    break;
+                }
             }
 
             handleInfo('Done! 🎉')
@@ -145,4 +164,11 @@ const app = async (handleInfo, handleError, props) => {
     await workFlow();
 }
 
-module.exports = app;
+const stopProccess = (handleInfo) => {
+    return new Promise((resolve, reject) => {
+        handleInfo('[INFO] Stop Pressed waiting this proccess until done')
+        resolve(stops = true)
+    });
+}
+
+module.exports = {mainScrape, stopProccess};

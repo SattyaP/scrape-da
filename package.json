@@ -12,7 +12,7 @@
     "lint": "echo \"No linting configured\"",
     "build": "npx electron-builder build",
     "deploy": "electron-builder -p always",
-    "dev": "node src/bot/main.js"
+    "dev": "node src/bot/dev.js"
   },
   "keywords": [],
   "author": {
@@ -26,7 +26,8 @@
     "fs": "^0.0.1-security",
     "puppeteer": "^21.6.0",
     "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.4.2",
