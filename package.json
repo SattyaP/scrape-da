@@ -10,9 +10,9 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "echo \"No linting configured\"",
-    "build": "npx electron-builder build",
-    "deploy": "electron-builder -p always",
-    "dev": "node src/bot/dev.js"
+    "deploy": "cross-env NODE_ENV=production electron-builder -p always",
+    "build": "cross-env NODE_ENV=production npx electron-builder build",
+    "dev": "node dev.js"
   },
   "keywords": [],
   "author": {
@@ -27,6 +27,7 @@
     "puppeteer": "^21.6.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "rollbar": "^2.26.4",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
@@ -36,6 +37,7 @@
     "@electron-forge/maker-squirrel": "^6.4.2",
     "@electron-forge/maker-zip": "^6.4.2",
     "@electron-forge/plugin-auto-unpack-natives": "^6.4.2",
+    "cross-env": "^7.0.3",
     "electron": "27.0.0",
     "electron-builder": "^24.9.1"
   },
@@ -43,8 +45,13 @@
     "type": "git",
     "url": "https://github.com/SattyaP/scrape-da"
   },
+  "electronmon": {
+    "patterns": [
+      "!src/bot/data/**"
+    ]
+  },
   "build": {
-    "appId": "org.alsav.da-checker",
+    "appId": "org.alsav.systems",
     "productName": "Alsav DA Checker",
     "compression": "maximum",
     "copyright": "Copyrights 2024 Alsav Systems",
@@ -55,13 +62,19 @@
       "private": false
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "./src/assets/icon.ico"
     },
     "nsis": {
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true
-    }
+    },
+    "extraFiles": [
+      "src/bot/extension/adblock",
+      "src/bot/extension/buster",
+      "src/bot/data/"
+    ]
   }
 }

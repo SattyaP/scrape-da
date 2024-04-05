@@ -158,8 +158,6 @@ function saveExcelData(props) {
         type: 'array'
     });
 
-    console.log(props.pathReport);
-
     const destinationFile = path.join(props.pathReport, `seo-data.xlsx`);
     fs.writeFileSync(destinationFile, new Uint8Array(data));
 }

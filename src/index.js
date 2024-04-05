@@ -4,17 +4,24 @@ const path = require("path");
 const fs = require("fs");
 const { mainScrape, stopProccess } = require("./bot/main");
 const production = process.env.NODE_ENV === "production" || false;
+var Rollbar = require('rollbar')
 
 if (require("electron-squirrel-startup")) {
   app.quit();
 }
+
+const rollbar = new Rollbar({
+  accessToken: '11653e79452b4dcdaad379387cf4db97',
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+})
 
 const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 724,
     // TODO: Create icon
-    // icon: path.join(__dirname, './assets/traffic-3.ico'),
+    icon: path.join(__dirname, './assets/icon.ico'),
     autoHideMenuBar: true,
     resizable: false,
     webPreferences: {
@@ -77,7 +84,7 @@ ipcMain.on("start-bot", async (event, props) => {
 
   const handleError = (error) => {
     if (production) {
-      // rollbar here
+      rollbar.error(error)
     } else {
       console.error(error);
     }

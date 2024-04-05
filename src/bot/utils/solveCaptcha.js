@@ -8,7 +8,6 @@ async function solveCaptcha(handleInfo, page) {
                 if (elIframe) {
                     const iframe = await elIframe.contentFrame();
                     if (iframe) {
-                        // TODO: Need handle specific captcha
                         const body = await iframe.waitForSelector('body');
                         if (body) {
                             const solverButton = await body.$('button[title="Solve the challenge"]');
