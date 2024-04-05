@@ -21,7 +21,7 @@ const createWindow = () => {
     width: 1280,
     height: 724,
     // TODO: Create icon
-    icon: path.join(__dirname, './assets/icon.ico'),
+    icon: path.join(__dirname, './assets/icon.png'),
     autoHideMenuBar: true,
     resizable: false,
     webPreferences: {
