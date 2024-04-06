@@ -45,7 +45,7 @@
           <p class="text-secondary">Scrape the most comprehensive SEO data to improve SEO performance</p>
         </div>
         <div>
-          <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#logs">
+          <button type="button" id="open-log" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#logs">
             Logs
           </button>
           <div class="modal fade hide-scollable" id="logs" tabindex="-1" aria-labelledby="logs"
@@ -82,17 +82,12 @@
         </div>
       </div>
       <div class="col-lg-4 col-md-12">
-        <div class="bg-white p-4 mb-3 rounded" style="height: 505px;">
+        <div class="bg-white p-4 mb-3 rounded">
           <h5 class="mb-3 text-decoration-underline">Upload File</h5>
 
           <div class="form-group mb-3">
             <label class="form-label" for="files">Upload URL / Domain Files</label>
             <input type="file" id="files" class="form-control" required accept=".txt">
-          </div>
-
-          <div class="form-group mb-3">
-            <label class="form-label" for="path-report">Path Report Files</label>
-            <input type="text" id="path-report" class="form-control" required placeholder="ex: d:/documents/...">
           </div>
 
           <div class="form-group mb-3">
@@ -122,6 +117,11 @@
           <button id="stop" class="btn btn-danger hidden w-100 mb-3">Stop</button>
 
           <span id="error-helper" class="fst-italic" style="font-size: 14px;">*Make sure all data is filled correctly</span>
+        </div>
+
+        <div class="bg-white p-3 rounded d-flex justify-content-between align-items-center">
+          <h5 class="text-decoration-underline">Results</h5>
+          <button id="btn-export" class="btn btn-secondary">Export</button>
         </div>
       </div>
     </div>

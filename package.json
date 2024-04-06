@@ -1,7 +1,7 @@
 {
   "name": "alsav-da-checker",
   "productName": "Alsav DA Checker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Alsav DA Checker is a tool to check the DA of a domain.",
   "main": "src/index.js",
   "scripts": {
@@ -10,9 +10,8 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "echo \"No linting configured\"",
-    "deploy": "cross-env NODE_ENV=production electron-builder -p always",
-    "build": "cross-env NODE_ENV=production npx electron-builder build",
-    "dev": "node dev.js"
+    "deploy": "cross-env NODE_ENV=production ROLLBAR_TOKEN=11653e79452b4dcdaad379387cf4db97 electron-builder -p always",
+    "build": "cross-env NODE_ENV=production npx electron-builder build"
   },
   "keywords": [],
   "author": {

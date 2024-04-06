@@ -16,12 +16,11 @@ table = document.getElementById('table-data'),
 files = document.getElementById('files'),
 pathReport = document.getElementById('path-report'),
 logTable = document.querySelector('table'),
-fs = require('fs'),
-path = require('path');
+btnExport = document.getElementById('btn-export');
 
 document.addEventListener('change', function () {
     const files = document.getElementById('files').files[0]?.path;
-    if (files == null || files == "" || (buster.checked && busterKey.value == "") || document.getElementById('path-report').value == ""){
+    if (files == null || files == "" || (buster.checked && busterKey.value == "")){
         start.setAttribute('disabled', true);
         errorHelper.textContent = "Something is missing!"
         errorHelper.classList.add('text-danger')
@@ -38,13 +37,14 @@ document.addEventListener('change', function () {
     }
 })
 
+document.getElementById('open-log').addEventListener('click', () => logTextarea.scrollTop = logTextarea.scrollHeight);
+
 start.addEventListener('click', function () {
     const props = {
         files: document.getElementById('files').files[0]?.path,
         headless: document.getElementById('visible').checked ? false : 'new',
         buster: buster.checked,
-        busterKey: busterKey.value,
-        pathReport: document.getElementById('path-report').value
+        busterKey: busterKey.value
     }
 
     ipcRenderer.send('start-bot', props)
@@ -104,7 +104,7 @@ ipcRenderer.on('log', (event, logs) => {
     logTextarea.scrollTop = logTextarea.scrollHeight;
 });
 
-const allElements = [buster, busterKey, files, pathReport];
+const allElements = [buster, busterKey, files, pathReport, btnExport];
 
 ipcRenderer.on('run', () => {
     start.classList.add('hidden');
@@ -117,11 +117,10 @@ ipcRenderer.on('run', () => {
     allElements.forEach(e => e.disabled = true)
 })
 
-ipcRenderer.on('finish', (event, props) => {
+ipcRenderer.on('finish', (event) => {
     start.classList.remove('hidden');
     stops.classList.add('hidden');
     allElements.forEach(e => e.disabled = false)
-    saveExcelData(props);
 })
 
 stops.addEventListener('click', () => {
@@ -132,7 +131,7 @@ stops.addEventListener('click', () => {
     }
 });
 
-function saveExcelData(props) {
+btnExport.onclick = () => {
     const wb = XLSX.utils.table_to_book(logTable);
     if (!wb['Sheets']['Sheet1']['!cols']) {
         wb['Sheets']['Sheet1']['!cols'] = [];
@@ -158,8 +157,7 @@ function saveExcelData(props) {
         type: 'array'
     });
 
-    const destinationFile = path.join(props.pathReport, `seo-data.xlsx`);
-    fs.writeFileSync(destinationFile, new Uint8Array(data));
+    ipcRenderer.send('save-excel-data', data);
 }
 
 // Update code line

@@ -1,17 +1,17 @@
-const { app, BrowserWindow, ipcMain, Menu } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu, dialog } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const fs = require("fs");
 const { mainScrape, stopProccess } = require("./bot/main");
 const production = process.env.NODE_ENV === "production" || false;
-var Rollbar = require('rollbar')
+const Rollbar = require('rollbar')
 
 if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
 const rollbar = new Rollbar({
-  accessToken: '11653e79452b4dcdaad379387cf4db97',
+  accessToken: process.env.ROLLBAR_TOKEN,
   captureUncaught: true,
   captureUnhandledRejections: true,
 })
@@ -20,7 +20,6 @@ const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 724,
-    // TODO: Create icon
     icon: path.join(__dirname, './assets/icon.png'),
     autoHideMenuBar: true,
     resizable: false,
@@ -104,10 +103,10 @@ ipcMain.on("start-bot", async (event, props) => {
     event.sender.send("run");
     await mainScrape(handleInfo, handleError, proggress, PostTable, props);
     handleInfo("Bot finished!");
-    event.sender.send("finish", props);
+    event.sender.send("finish");
   } catch (error) {
     handleError(error);
-    event.sender.send("finish", props);
+    event.sender.send("finish");
   }
 });
 
@@ -120,5 +119,43 @@ ipcMain.on("stop", async (event) => {
   };
 
   stopProccess(handleInfo).then(event.sender.send("finish"));
+});
+
+ipcMain.on('save-excel-data', (event, data) => {
+  const options = {
+      title: 'Save the data',
+      defaultPath: `data-seo.xlsx`,
+      filters: [{
+          name: '.xlsx',
+          extensions: ['xlsx']
+      }]
+  };
+
+  dialog.showSaveDialog(options).then(result => {
+      if (!result.canceled) {
+          fs.writeFileSync(result.filePath, new Uint8Array(data));
+          dialog.showMessageBox({
+              type: 'info',
+              title: 'Alert',
+              message: 'Success save the file report',
+              buttons: ['OK']
+          });
+      } else {
+          dialog.showMessageBox({
+              type: 'info',
+              title: 'Alert',
+              message: 'File save cancelled',
+              buttons: ['OK']
+          });
+      }
+  }).catch(err => {
+      console.error(err);
+      dialog.showMessageBox({
+          type: 'error',
+          title: 'Error',
+          message: 'An error occurred while saving the file.',
+          buttons: ['OK']
+      });
+  });
 });
 
