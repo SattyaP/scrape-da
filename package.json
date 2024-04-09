@@ -1,7 +1,7 @@
 {
   "name": "alsav-da-checker",
   "productName": "Alsav DA Checker",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Alsav DA Checker is a tool to check the DA of a domain.",
   "main": "src/index.js",
   "scripts": {
@@ -42,7 +42,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/SattyaP/scrape-da"
+    "url": "https://github.com/alsavdev/Alsav-DA-Checker"
   },
   "electronmon": {
     "patterns": [
@@ -56,8 +56,8 @@
     "copyright": "Copyrights 2024 Alsav Systems",
     "publish": {
       "provider": "github",
-      "owner": "SattyaP",
-      "repo": "scrape-da",
+      "owner": "alsavdev",
+      "repo": "Alsav-DA-Checker",
       "private": false
     },
     "win": {
