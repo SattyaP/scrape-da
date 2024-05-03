@@ -1,7 +1,7 @@
 {
   "name": "alsav-da-checker",
   "productName": "Alsav DA Checker",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Alsav DA Checker is a tool to check the DA of a domain.",
   "main": "src/index.js",
   "scripts": {

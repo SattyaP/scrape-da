@@ -133,7 +133,7 @@ const mainScrape = async (handleInfo, handleError, proggress, PostTable, props) 
     const workFlow = async () => {
         try {
             const urls = getFilesData();
-            for (let i = 0; i < urls.length; i++) {
+            for (let i = 1; i < urls.length; i++) {
                 if (stops) {
                     handleInfo("Stop Process is done")
                     stops = false
